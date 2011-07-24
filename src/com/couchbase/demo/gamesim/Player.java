@@ -1,15 +1,23 @@
 package com.couchbase.demo.gamesim;
 
+import java.util.UUID;
+
 /**
  * This class represents a player in the game simulator.
  * @author ingenthr
  */
 public class Player {
-    private String playerName;
+    private String jsonType = "player";
+    private UUID uuid;
+    private String name;
     private Integer hitpoints;
+    private int experience;
+    private int level;
+    private int loggedIn;
 
     public Player(final String playerName) {
-	this.playerName = playerName;
+	this.name = playerName;
+	uuid = UUID.randomUUID();
     }
 
     public Player() {
@@ -32,7 +40,7 @@ public class Player {
     }
 
     String getName() {
-	return this.playerName;
+	return this.name;
     }
 
     private void setHitpoints(int i) {
