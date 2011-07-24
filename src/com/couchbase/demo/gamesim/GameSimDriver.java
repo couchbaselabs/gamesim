@@ -1,60 +1,42 @@
-/* The contents of this file are subject to the terms
- * of the Common Development and Distribution License
- * (the License). You may not use this file except in
- * compliance with the License.
- *
- * You can obtain a copy of the License at
- * http://www.sun.com/cddl/cddl.html or
- * install_dir/legal/LICENSE
- * See the License for the specific language governing
- * permission and limitations under the License.
- *
- * When distributing Covered Code, include this CDDL
- * Header Notice in each file and include the License file
- * at install_dir/legal/LICENSE.
- * If applicable, add the following below the CDDL Header,
- * with the fields enclosed by brackets [] replaced by
- * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * $Id$
- *
- * Copyright 2005-2009 Sun Microsystems Inc. All Rights Reserved
+/*
+ * This benchmark has been based on the FTP101 driver
  */
 package com.couchbase.demo.gamesim;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.faban.driver.*;
 import com.sun.faban.driver.util.Random;
+import com.sun.faban.harness.EndRun;
+import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import sun.net.ftp.FtpClient;
 
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.logging.Logger;
+import net.spy.memcached.MemcachedClient;
 
-/**
- * FTP Driver. Please note that we're using the sun.net.ftp.FtpClient api.
- * While this api has been relatively stable, it is not a public api and
- * may change without notice.
- */
-@BenchmarkDefinition (
-    name    = "Sample FTP Workload 101",
-    version = "0.2",
-    configPrecedence = true
-)
-@BenchmarkDriver (
-    name           = "FTPDriver",
-    threadPerScale    = 1
-)
-@FlatMix (
-    operations = {"GET", "PUT", "Connect"},
-    mix = { 80, 15, 5 },
-    deviation = 2
-)
-@NegativeExponential (
-    cycleType = CycleType.CYCLETIME,
-    cycleMean = 2000,
-    cycleDeviation = 2
-)
+@BenchmarkDefinition(name = "Game Simulator",
+version = "0.1",
+configPrecedence = true)
+@BenchmarkDriver(name = "GameSimDriver",
+threadPerScale = (float) 1)
+@MatrixMix (
+    operations = {"Login", "Logout", "Eat", "AttackRandom"},
+    mix = { @Row({0, 0, 66, 34 }),
+            @Row({100, 0, 0, 0 }),
+            @Row({0, 10, 56, 34 }),
+	    @Row({0, 10, 56, 34})
+          }
+    )
+@NegativeExponential(cycleType = CycleType.CYCLETIME,
+cycleMean = 3,
+cycleDeviation = 2)
 public class GameSimDriver {
 
     /** The driver context for this instance. */
@@ -70,134 +52,171 @@ public class GameSimDriver {
     String localFileName;
     String uploadPrefix;
     String user;
+    Gson gson;
+    GsonBuilder gsonBuilder;
+    String playerName;
     String password;
+    Player player;
     byte[] buffer = new byte[8192];
+    private static MemcachedClient playersStore;
+    private static MemcachedClient currentStatsStore;
+
+    private static final String[] players = {"Matt Ingenthron", "Steve Yen", "Dustin Sallings",
+					     "James Phillips", "Trond Norbye", "Melinda Wilken",
+					     "Bob Wiederhold", "Perry Krug", "Steven Mih",
+					     "Leila Iravini", "Tony Nguyen", "Damien Katz", "Jan Lehnardt", "JChris Anderson",
+					     "Volker Mische", "Dale Harvey", "Aaron Miller", "Aliaksey Kandratsenka", "Frank Weigel"
+                                            };
+
 
     /**
-     * Constructs the FTP driver instance.
+     * Constructs an instance of a user session on the game simulator.
      * @throws XPathExpressionException An XPath error occurred
      * @throws IOException I/O error creating the driver instance
      */
     public GameSimDriver() throws XPathExpressionException, IOException {
-        ctx = DriverContext.getContext();
+	ctx = DriverContext.getContext();
 
-        logger = ctx.getLogger();
+	// set up gson for serialization
+	gsonBuilder = new GsonBuilder();
+	gson = gsonBuilder.create();
 
-        random = ctx.getRandom();
-        threadId = ctx.getThreadId();
-        uploadPrefix = "up" + threadId + '_';
-        localFileName = "/tmp/ftp" + threadId;
-        host =
-                ctx.getXPathValue("/ftpBenchmark/serverConfig/host").trim();
-        String port =
-                ctx.getXPathValue("/ftpBenchmark/serverConfig/port").trim();
-        fileCount = Integer.parseInt(ctx.getXPathValue(
-                "/ftpBenchmark/serverConfig/fileCount").trim());
-        user = ctx.getProperty("user");
-        password = ctx.getProperty("password");
+	logger = ctx.getLogger();
 
-        // Connect ftp client.
-        ftpClient = new FtpClient();
-        if (port == null || port.length() == 0) {
-            ftpClient.openServer(host);
-        } else {
-            this.port = Integer.parseInt(port);
-            ftpClient.openServer(host, this.port);
-        }
-        ftpClient.login(user, password);
-        ftpClient.binary();
-        ftpClient.cd("pub");
-
-        // Download initial file.
-        int fileNo = random.random(1, fileCount);
-        String fileName = "File" + fileNo;
-        FileOutputStream download = new FileOutputStream(localFileName);
-        int count;
-        int size = 0;
-        InputStream ftpIn = ftpClient.get(fileName);
-        while ((count = ftpIn.read(buffer)) != -1) {
-            download.write(buffer, 0, count);
-            size += count;
-        }
-        if (size == 0)
-            throw new FatalException("Cannot get file :" + fileName);
-        ftpIn.close();
-        download.close();
+	random = ctx.getRandom();
+	threadId = ctx.getThreadId();
+	uploadPrefix = "up" + threadId + '_';
+	localFileName = "/tmp/ftp" + threadId;
+	host =
+		ctx.getXPathValue("/gamesimBenchmark/serverConfig/host").trim();
+	String portNum =
+		ctx.getXPathValue("/gamesimBenchmark/serverConfig/port").trim();
+	fileCount = Integer.parseInt(ctx.getXPathValue(
+		"/gamesimBenchmark/serverConfig/fileCount").trim());
+	user = ctx.getProperty("user");
+	password = ctx.getProperty("password");
+	URI server;
+	try {
+	    // Create a basic client
+	    server = new URI("http://localhost:8091/pools");
+	} catch (URISyntaxException ex) {
+	    Logger.getLogger(GameSimDriver.class.getName()).log(Level.SEVERE, null, ex);
+	    throw new IOException("Could not deal with URI.");
+	}
+	ArrayList<URI> servers = new ArrayList<URI>();
+	servers.add(server);
+	try {
+	    // @todo fix up this singletonness of the clients
+	    if (playersStore == null) {
+		playersStore = new MemcachedClient(servers, "gamesim-players", "gamesim-players", "letmein");
+	    }
+	    if (currentStatsStore == null) {
+		currentStatsStore = new MemcachedClient(servers, "gamesim-stats", "gamesim-stats", "letmein");
+	    }
+	} catch (javax.naming.ConfigurationException ex) {
+	    Logger.getLogger(GameSimDriver.class.getName()).log(Level.SEVERE, null, ex);
+	    throw new IOException("Could not configure the memcached client.");
+	}
     }
 
     /**
-     * Operation to test FTP get.
-     * @throws IOException Error doing the get
+     * Operation to simulate a login.
+     * @throws IOException Error connecting to server
      */
-    @BenchmarkOperation (
-        name    = "GET",
-        max90th = 2,
-        timing  = Timing.MANUAL
-    )
-    public void doGet() throws IOException {
-        int fileNo = random.random(1, fileCount);
-        String fileName = "File" + fileNo;
-        logger.finest("Getting " + fileName);
-        FileOutputStream download = new FileOutputStream(localFileName);
-        int count;
-        ctx.recordTime();
-        InputStream ftpIn = ftpClient.get(fileName);
-        while ((count = ftpIn.read(buffer)) != -1)
-            download.write(buffer, 0, count);
-        ftpIn.close();
-        ctx.recordTime();
-        download.close();
+    @BenchmarkOperation(name = "Login",
+    max90th = 2,
+    timing = Timing.MANUAL)
+    public void doLogin() throws IOException {
+
+	if (player != null) {
+	    return;
+	}
+
+	ctx.recordTime();
+	playerName = getRandomPlayer();
+	String playerJsonRepresentation = (String) playersStore.get(stripBlanks(playerName));
+	logger.log(Level.FINE, "Player JSON:\n {0}", playerJsonRepresentation);
+	if (playerJsonRepresentation == null) {
+	    logger.log(Level.FINE, "Player JSON:\n {0}", playerJsonRepresentation);
+	    player = new Player(playerName);
+	} else {
+	    player = gson.fromJson(playerJsonRepresentation, Player.class);
+	}
+	ctx.recordTime();
     }
 
     /**
-     * Operation to test FTP put.
-     * @throws IOException Error doing the put
+     * Operation to simulate a login.
+     * @throws IOException Error connecting to server
      */
-    @NegativeExponential (
-        cycleType = CycleType.CYCLETIME,
-        cycleMean = 4000,
-        cycleDeviation = 2
-    )
-    @BenchmarkOperation (
-        name    = "PUT",
-        max90th = 2,
-        timing  = Timing.MANUAL
-    )
-    public void doPut() throws IOException {
-        String fileName = uploadPrefix + putSequence++;
-        logger.finest("Putting " + fileName);
-        FileInputStream upload = new FileInputStream(localFileName);
-        int count;
-        ctx.recordTime();
-        OutputStream ftpOut = ftpClient.put(fileName);
-        while ((count = upload.read(buffer)) != -1)
-            ftpOut.write(buffer, 0, count);
-        ftpOut.close();
-        ctx.recordTime();
-        upload.close();
+    @BenchmarkOperation(name = "Logout",
+    max90th = 2,
+    timing = Timing.MANUAL)
+    public void doLogout() throws IOException, InterruptedException, ExecutionException {
+	if (player == null) {
+	    return; // can't log out when logged out
+	}
+	ctx.recordTime();
+	Future<Boolean> setRes = playersStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
+	setRes.get();
+	player = null;
+	ctx.recordTime();
     }
 
     /**
-     * Operation to test ftp connect to server.
-     * @throws IOException Error connecting to ftp server
+     * Operation to simulate attacking another player.
+     * @throws IOException Error connecting to server
      */
-    @BenchmarkOperation (
-        name    = "Connect",
-        max90th = 2,
-        timing  = Timing.MANUAL
-    )
-    public void doConnect() throws IOException {
-        ftpClient.closeServer();
+    @BenchmarkOperation(name = "AttackRandom",
+    max90th = 2,
+    timing = Timing.MANUAL)
+    public void doAttackRandom() throws IOException, InterruptedException, ExecutionException {
+	doLogin();
+	ctx.recordTime();
+	player.wound(1);
+	String defender = getRandomPlayer();
+	String winner;
+	if (random.random(0, 1) == 1) {
+	    winner = defender;
+	} else {
+	    winner = player.getName();
+	}
 
-        ctx.recordTime();
-        if (port == -1) {
-            ftpClient.openServer(host);
-        } else {
-            ftpClient.openServer(host, this.port);
-        }
-        ftpClient.login(user, password);
-        ftpClient.binary();
-        ftpClient.cd("pub");
-        ctx.recordTime();
+	Fight newFight = new Fight(player.getName(), defender, winner, random.random(50, 1000));
+	Future<Boolean> setRes = currentStatsStore.set(stripBlanks(newFight.getVersus()), port, gson.toJson(newFight));
+	setRes.get();
+	ctx.recordTime();
     }
+
+    /**
+     * Operation to simulate eating.
+     * @throws IOException Error connecting to server
+     */
+    @BenchmarkOperation(name = "Eat",
+    max90th = 2,
+    timing = Timing.MANUAL)
+    public void doEat() throws IOException {
+	doLogin();
+	ctx.recordTime();
+	player.feed(100);
+	ctx.recordTime();
+    }
+
+    @EndRun
+    public void cleanup() {
+	playersStore.flush();
+	currentStatsStore.flush();
+	playersStore.shutdown();
+	currentStatsStore.shutdown();
+    }
+
+    public static String stripBlanks(String s) {
+	return s.replaceAll("\\s", "");
+    }
+
+    public String getRandomPlayer() {
+	int i = random.random(0, players.length);
+	return players[i];
+    }
+
 }
