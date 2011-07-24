@@ -30,9 +30,10 @@
     </target>
 
     <target name="compile" depends="init" description="Compiling all source files">
+        <mkdir dir="${classes.dir}" />
         <javac srcdir="${src.dir}"
             deprecation="on" target="${compiler.target.version}"
-            destdir="${classes.dir}" debug="on">
+            destdir="${classes.dir}" debug="on" includeantruntime="false">
             <include name="**/*.java" />
             <classpath refid="classpath"/>
         </javac>
