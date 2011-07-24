@@ -7,7 +7,7 @@
         <xforms:model id='benchmark-model'>
             <xforms:instance id='benchmark-instance' src='{benchmark.template}'/>
             <xforms:submission xforms:action='schedule-run.jsp' xforms:replace='all' id='submission-debug' xforms:method='post'/>
-            <xforms:bind id='bind-ftpBenchmark' xforms:nodeset='/ftpBenchmark'>
+            <xforms:bind id='bind-gamesimBenchmark' xforms:nodeset='/gamesimBenchmark'>
 	<xforms:bind id='bind-jvmConfig' xforms:nodeset='fh:jvmConfig'  >
 		<xforms:bind id='bind-jvmConfig-javaHome' xforms:nodeset='fh:javaHome'  >
 		</xforms:bind>
@@ -55,7 +55,7 @@
 			<xforms:bind id='bind-runConfig-runtimeStats-interval' xforms:nodeset='fd:interval'  >
 			</xforms:bind>
 		</xforms:bind>
-		<xforms:bind id='bind-runConfig-driverConfig' xforms:nodeset='fd:driverConfig[@name="FTPDriver"]'  >
+		<xforms:bind id='bind-runConfig-driverConfig' xforms:nodeset='fd:driverConfig[@name="GameSimDriver"]'  >
 			<xforms:bind id='bind-runConfig-driverConfig-agents' xforms:nodeset='fd:agents'  >
 			</xforms:bind>
 			<xforms:bind id='bind-runConfig-driverConfig-stats' xforms:nodeset='fd:stats'  >
