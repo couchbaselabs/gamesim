@@ -58,8 +58,7 @@ public class GameSimDriver {
     String password;
     Player player;
     byte[] buffer = new byte[8192];
-    private static MemcachedClient playersStore;
-    private static MemcachedClient currentStatsStore;
+    private static MemcachedClient gamesimStore;
 
     private static final String[] players = {"Matt Ingenthron", "Steve Yen", "Dustin Sallings",
 					     "James Phillips", "Trond Norbye", "Melinda Wilken",
@@ -107,11 +106,8 @@ public class GameSimDriver {
 	servers.add(server);
 	try {
 	    // @todo fix up this singletonness of the clients
-	    if (playersStore == null) {
-		playersStore = new MemcachedClient(servers, "gamesim-players", "gamesim-players", "letmein");
-	    }
-	    if (currentStatsStore == null) {
-		currentStatsStore = new MemcachedClient(servers, "gamesim-stats", "gamesim-stats", "letmein");
+	    if (gamesimStore == null) {
+		gamesimStore = new MemcachedClient(servers, "gamesim-players", "gamesim-players", "letmein");
 	    }
 	} catch (javax.naming.ConfigurationException ex) {
 	    Logger.getLogger(GameSimDriver.class.getName()).log(Level.SEVERE, null, ex);
@@ -134,7 +130,7 @@ public class GameSimDriver {
 
 	ctx.recordTime();
 	playerName = getRandomPlayer();
-	String playerJsonRepresentation = (String) playersStore.get(stripBlanks(playerName));
+	String playerJsonRepresentation = (String) gamesimStore.get(stripBlanks(playerName));
 	logger.log(Level.FINE, "Player JSON:\n {0}", playerJsonRepresentation);
 	if (playerJsonRepresentation == null) {
 	    logger.log(Level.FINE, "Player JSON:\n {0}", playerJsonRepresentation);
@@ -157,7 +153,7 @@ public class GameSimDriver {
 	    return; // can't log out when logged out
 	}
 	ctx.recordTime();
-	Future<Boolean> setRes = playersStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
+	Future<Boolean> setRes = gamesimStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
 	setRes.get();
 	player = null;
 	ctx.recordTime();
@@ -183,7 +179,7 @@ public class GameSimDriver {
 	}
 
 	Fight newFight = new Fight(player.getName(), defender, winner, random.random(50, 1000));
-	Future<Boolean> setRes = currentStatsStore.set(stripBlanks(newFight.getVersus()), port, gson.toJson(newFight));
+	Future<Boolean> setRes = gamesimStore.set(stripBlanks(newFight.getVersus()), port, gson.toJson(newFight));
 	setRes.get();
 	ctx.recordTime();
     }
@@ -204,10 +200,8 @@ public class GameSimDriver {
 
     @EndRun
     public void cleanup() {
-	playersStore.flush();
-	currentStatsStore.flush();
-	playersStore.shutdown();
-	currentStatsStore.shutdown();
+	//gamesimStore.flush();
+	gamesimStore.shutdown();
     }
 
     public static String stripBlanks(String s) {
