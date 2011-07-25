@@ -101,9 +101,9 @@
 	<xforms:bind id='bind-serverConfig' xforms:nodeset='serverConfig'  >
 		<xforms:bind id='bind-serverConfig-host' xforms:nodeset='host'  >
 		</xforms:bind>
-		<xforms:bind id='bind-serverConfig-port' xforms:nodeset='port' xforms:type='positiveInteger'>
+		<xforms:bind id='bind-serverConfig-bucket' xforms:nodeset='bucket'>
 		</xforms:bind>
-		<xforms:bind id='bind-serverConfig-fileCount' xforms:nodeset='fileCount'  >
+                <xforms:bind id='bind-serverConfig-bucketpw' xforms:nodeset='bucketpw'>
 		</xforms:bind>
 	</xforms:bind>
 </xforms:bind>
@@ -119,16 +119,16 @@
 <runConfig>Run Config</runConfig>
 <description>Description</description>
 <hostConfig>Host Config</hostConfig>
-<host>Host</host>
-<enabled>Enabled</enabled>
+<host>Cluster URI</host>
+<enabled>Override with config</enabled>
 <cpus>Cpus</cpus>
 <tools>Tools</tools>
 <userCommands>User Commands</userCommands>
 <scale>Scale</scale>
 <runControl>Run Control</runControl>
-<rampUp>Ramp Up</rampUp>
-<steadyState>Steady State</steadyState>
-<rampDown>Ramp Down</rampDown>
+<rampUp>Ramp Up (seconds)</rampUp>
+<steadyState>Steady State(seconds)</steadyState>
+<rampDown>Ramp Down (seconds)</rampDown>
 <outputDir>Output Dir</outputDir>
 <audit>Audit</audit>
 <threadStart>Thread Start</threadStart>
@@ -147,8 +147,8 @@
 <operationMix>Operation Mix</operationMix>
 <r>R</r>
 <serverConfig>Server Config</serverConfig>
-<port>Port</port>
-<fileCount>File Count</fileCount>
+<bucket>Bucket Name</bucket>
+<bucketpw>Bucket Password</bucketpw>
 
                     <unit>Unit</unit>
                     <time>Time (sec)</time>
@@ -186,16 +186,6 @@
 </xforms:trigger>
 
             <xforms:switch id="switch">
-                	<xforms:case id='case-jvmConfig'>
-		<xforms:group id='group-jvmConfig'>
-		<xforms:input id='input-jvmConfig-javaHome' xforms:bind='bind-jvmConfig-javaHome'>
-			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/javaHome'/>
-		</xforms:input>
-		<xforms:input id='input-jvmConfig-jvmOptions' xforms:bind='bind-jvmConfig-jvmOptions'>
-			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/jvmOptions'/>
-		</xforms:input>
-		</xforms:group>
-	</xforms:case>
 	<xforms:case id='case-runConfig'>
 		<xforms:group id='group-runConfig'>
 		<xforms:input id='input-runConfig-description' xforms:bind='bind-runConfig-description'>
@@ -316,11 +306,21 @@
 		<xforms:input id='input-serverConfig-host' xforms:bind='bind-serverConfig-host'>
 			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/host'/>
 		</xforms:input>
-		<xforms:input id='input-serverConfig-port' xforms:bind='bind-serverConfig-port'>
-			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/port'/>
+		<xforms:input id='input-serverConfig-bucket' xforms:bind='bind-serverConfig-bucket'>
+			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/bucket'/>
 		</xforms:input>
-		<xforms:input id='input-serverConfig-fileCount' xforms:bind='bind-serverConfig-fileCount'>
-			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/fileCount'/>
+                <xforms:input id='input-serverConfig-bucketpw' xforms:bind='bind-serverConfig-bucketpw'>
+			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/bucketpw'/>
+		</xforms:input>
+		</xforms:group>
+	</xforms:case>
+        <xforms:case id='case-jvmConfig'>
+		<xforms:group id='group-jvmConfig'>
+		<xforms:input id='input-jvmConfig-javaHome' xforms:bind='bind-jvmConfig-javaHome'>
+			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/javaHome'/>
+		</xforms:input>
+		<xforms:input id='input-jvmConfig-jvmOptions' xforms:bind='bind-jvmConfig-jvmOptions'>
+			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/jvmOptions'/>
 		</xforms:input>
 		</xforms:group>
 	</xforms:case>

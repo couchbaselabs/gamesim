@@ -57,6 +57,8 @@ public class GameSimDriver {
     String playerName;
     String password;
     Player player;
+    private final String bucketname;
+    private String bucketpass;
     byte[] buffer = new byte[8192];
     private static MemcachedClient gamesimStore;
 
@@ -90,28 +92,29 @@ public class GameSimDriver {
 		ctx.getXPathValue("/gamesimBenchmark/serverConfig/host").trim();
 	String portNum =
 		ctx.getXPathValue("/gamesimBenchmark/serverConfig/port").trim();
-	fileCount = Integer.parseInt(ctx.getXPathValue(
-		"/gamesimBenchmark/serverConfig/fileCount").trim());
 	user = ctx.getProperty("user");
 	password = ctx.getProperty("password");
 	URI server;
 	try {
 	    // Create a basic client
-	    server = new URI("http://localhost:8091/pools");
+	    server = new URI(ctx.getXPathValue("/gamesimBenchmark/serverConfig/host").trim());
 	} catch (URISyntaxException ex) {
 	    Logger.getLogger(GameSimDriver.class.getName()).log(Level.SEVERE, null, ex);
 	    throw new IOException("Could not deal with URI.");
 	}
+	bucketname = ctx.getXPathValue("/gamesimBenchmark/serverConfig/bucket").trim();
+	bucketpass = ctx.getXPathValue("/gamesimBenchmark/serverConfig/bucketpw").trim();
+	if (bucketpass == null) {
+	    bucketpass = "";
+	}
 	ArrayList<URI> servers = new ArrayList<URI>();
 	servers.add(server);
-	try {
-	    // @todo fix up this singletonness of the clients
-	    if (gamesimStore == null) {
-		gamesimStore = new MemcachedClient(servers, "gamesim-players", "gamesim-players", "letmein");
-	    }
-	} catch (javax.naming.ConfigurationException ex) {
-	    Logger.getLogger(GameSimDriver.class.getName()).log(Level.SEVERE, null, ex);
-	    throw new IOException("Could not configure the memcached client.");
+	// @todo fix up this singletonness of the clients
+	if (gamesimStore == null) {
+	    // can't do this, bug SPY-2
+	    //ConnectionFactoryBuilder cfb = new ConnectionFactoryBuilder();
+	    //cfb.setOpTimeout(20000).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY);
+	    gamesimStore = new MemcachedClient(servers, bucketname, bucketpass);
 	}
     }
 
@@ -209,7 +212,7 @@ public class GameSimDriver {
     }
 
     public String getRandomPlayer() {
-	int i = random.random(0, players.length);
+	int i = random.random(0, players.length-1);
 	return players[i];
     }
 

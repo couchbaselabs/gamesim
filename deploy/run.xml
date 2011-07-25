@@ -16,13 +16,13 @@
             <fa:host>ec2-50-19-74-112.compute-1.amazonaws.com</fa:host>
             <fh:enabled>true</fh:enabled>
             <fh:cpus>0</fh:cpus>
-            <fh:tools>vmstat 10; mpstat 10; nicstat 10; iostat -x 10</fh:tools>
+        <fh:tools>vmstat 10; mpstat 10; iostat -kdx 10</fh:tools>
             <fh:userCommands></fh:userCommands>
         </fa:hostConfig>
         <!-- The scale of the benchmark run, the driver definition
         defines the number of threads for each driver scale
         and each driver type. -->
-        <fa:scale>1</fa:scale>
+        <fa:scale>100</fa:scale>
         <!-- The rampup, steadystate, and rampdown of the driver -->
         <fa:runControl unit="time">
             <fa:rampUp>2</fa:rampUp>
@@ -109,8 +109,8 @@
     the driver. Such parameters are generally used by the
     Faban Harness.-->
     <serverConfig>
-        <host>129.146.207.112</host>
-        <port/>
-        <fileCount>1000</fileCount>
+        <host>http://ec2-72-44-43-214.compute-1.amazonaws.com:8091/pools</host>
+        <bucket>default</bucket>
+        <bucketpw></bucketpw>
     </serverConfig>
 </gamesimBenchmark>
