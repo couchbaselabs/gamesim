@@ -13,7 +13,7 @@ public class Player {
     private Integer hitpoints;
     private int experience;
     private int level;
-    private int loggedIn;
+    private boolean loggedIn;
 
     public Player(final String playerName) {
 	this.name = playerName;
