@@ -119,7 +119,8 @@
 <runConfig>Run Config</runConfig>
 <description>Description</description>
 <hostConfig>Host Config</hostConfig>
-<host>Cluster URI</host>
+<host>Driver hosts</host>
+<runhost>Cluster URI</runhost>
 <enabled>Override with config</enabled>
 <cpus>Cpus</cpus>
 <tools>Tools</tools>
@@ -304,7 +305,7 @@
 	<xforms:case id='case-serverConfig'>
 		<xforms:group id='group-serverConfig'>
 		<xforms:input id='input-serverConfig-host' xforms:bind='bind-serverConfig-host'>
-			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/host'/>
+			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/runhost'/>
 		</xforms:input>
 		<xforms:input id='input-serverConfig-bucket' xforms:bind='bind-serverConfig-bucket'>
 			<xforms:label xforms:model='benchmark-labels' xforms:ref='/labels/bucket'/>

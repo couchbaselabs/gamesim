@@ -36,7 +36,7 @@ threadPerScale = (float) 1)
     )
 @NegativeExponential(cycleType = CycleType.CYCLETIME,
 cycleMean = 3,
-cycleDeviation = 2)
+cycleDeviation = 5)
 public class GameSimDriver {
 
     /** The driver context for this instance. */

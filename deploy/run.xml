@@ -25,9 +25,9 @@
         <fa:scale>100</fa:scale>
         <!-- The rampup, steadystate, and rampdown of the driver -->
         <fa:runControl unit="time">
-            <fa:rampUp>2</fa:rampUp>
-            <fa:steadyState>5</fa:steadyState>
-            <fa:rampDown>2</fa:rampDown>
+            <fa:rampUp>30</fa:rampUp>
+            <fa:steadyState>120</fa:steadyState>
+            <fa:rampDown>30</fa:rampDown>
         </fa:runControl>
         <!-- The place where results are written -->
         <outputDir>/tmp/output</outputDir>
