@@ -26,16 +26,15 @@ version = "0.1",
 configPrecedence = true)
 @BenchmarkDriver(name = "GameSimDriver",
 threadPerScale = (float) 1)
-@MatrixMix (
-    operations = {"Login", "Logout", "Eat", "AttackRandom"},
-    mix = { @Row({0, 0, 66, 34 }),
-            @Row({100, 0, 0, 0 }),
-            @Row({0, 10, 56, 34 }),
-	    @Row({0, 10, 56, 34})
-          }
-    )
+@MatrixMix(operations = {"Login", "Logout", "Eat", "AttackRandom"},
+mix = {
+    @Row({0, 0, 66, 34}),
+    @Row({100, 0, 0, 0}),
+    @Row({0, 10, 56, 34}),
+    @Row({0, 10, 56, 34})
+})
 @NegativeExponential(cycleType = CycleType.CYCLETIME,
-cycleMean = 3,
+cycleMean = 1000,
 cycleDeviation = 5)
 public class GameSimDriver {
 
