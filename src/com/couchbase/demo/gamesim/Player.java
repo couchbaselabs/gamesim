@@ -2,6 +2,8 @@ package com.couchbase.demo.gamesim;
 
 import java.util.UUID;
 
+import com.sun.faban.driver.util.Random;
+
 /**
  * This class represents a player in the game simulator.
  * @author ingenthr
@@ -14,10 +16,13 @@ public class Player {
     private int experience;
     private int level;
     private boolean loggedIn;
+    private final Random random = new Random();
 
     public Player(String playerName) {
-	this.name = playerName;
+	name = playerName;
 	uuid = UUID.randomUUID();
+	hitpoints = random.random(70, 150);
+	level = random.random(1, 5);
     }
 
     public Player() {
