@@ -60,5 +60,8 @@ public class Player {
 	loggedIn = false;
     }
 
+    void wound() {
+	hitpoints = 10;
+    }
 
 }

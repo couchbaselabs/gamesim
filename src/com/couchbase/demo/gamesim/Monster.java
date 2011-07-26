@@ -35,4 +35,25 @@ public class Monster {
 	return name;
     }
 
+    /**
+     * @return the hitpoints
+     */
+    public int getHitpoints() {
+	return hitpoints;
+    }
+
+    /**
+     * @return the experienceWhenKilled
+     */
+    public int getExperienceWhenKilled() {
+	return experienceWhenKilled;
+    }
+
+    /**
+     * @return the itemProbability
+     */
+    public double getItemProbability() {
+	return itemProbability;
+    }
+
 }

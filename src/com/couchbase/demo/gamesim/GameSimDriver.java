@@ -8,7 +8,6 @@ import com.google.gson.GsonBuilder;
 import com.sun.faban.driver.*;
 import com.sun.faban.driver.util.Random;
 import com.sun.faban.harness.EndRun;
-import com.sun.faban.harness.PreRun;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -218,14 +217,21 @@ public class GameSimDriver {
     timing = Timing.MANUAL)
     public void doAttackRandom() throws IOException, InterruptedException, ExecutionException {
 	doLogin();
+	String attackerName = getRandomMonster();
 	ctx.recordTime();
-	player.wound(1);
-	String defender = getRandomPlayerName();
-	String winner;
-	if (random.random(0, 1) == 1) {
-	    winner = defender;
+	Monster attacker = gson.fromJson((String)gamesimStore.get(attackerName), Monster.class);
+
+	Double playerWinProbable = new Double(player.getHitpoints()) / new Double(player.getHitpoints()) + new Double(attacker.getHitpoints());
+	// playerHitpoints/(playerHitpoints + monsterHitpoints))
+	if (playerWinProbable > 0.5d) {
+	    player.feed(attacker.getExperienceWhenKilled());
+	    Double itemProb = random.drandom(0.0d, 1.0d);
+	    if (itemProb <= attacker.getItemProbability()) {
+		// create a new item
+	    }
+	    // TODO: Level up!
 	} else {
-	    winner = player.getName();
+	    player.wound();
 	}
 
 	ctx.recordTime();
