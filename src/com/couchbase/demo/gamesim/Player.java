@@ -25,8 +25,8 @@ public class Player {
 	level = random.random(1, 5);
     }
 
-    public Player() {
-	
+    protected Player() {
+	// for GSON
     }
 
     public Integer getHitpoints() {

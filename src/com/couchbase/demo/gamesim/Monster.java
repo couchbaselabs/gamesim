@@ -17,7 +17,7 @@ public class Monster {
 
     private Random random = new Random();
     private String jsonType = "monster";
-    private final String name;
+    private String name;
     private UUID uuid;
     private int hitpoints;
     private int experienceWhenKilled;
@@ -29,6 +29,10 @@ public class Monster {
 	experienceWhenKilled = random.random(10, 100);
 	hitpoints = random.random(10, 100);
 	itemProbability = random.drandom(0.1d, 0.6d);
+    }
+
+    protected Monster() {
+	// for GSON
     }
 
     String getName() {

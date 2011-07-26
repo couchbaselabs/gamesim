@@ -172,7 +172,6 @@ public class GameSimDriver {
 	if (player != null) {
 	    return;
 	}
-
 	ctx.recordTime();
 	playerName = getRandomPlayer();
 	String playerJsonRepresentation = (String) gamesimStore.get(stripBlanks(playerName));
@@ -185,8 +184,7 @@ public class GameSimDriver {
 	}
 
 	player.logIn();
-	Future<Boolean> setRes = gamesimStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
-	setRes.get();
+	storePlayer();
 	ctx.recordTime();
     }
 
@@ -202,10 +200,15 @@ public class GameSimDriver {
 	    return; // can't log out when logged out
 	}
 	ctx.recordTime();
-	Future<Boolean> setRes = gamesimStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
-	setRes.get();
+	player.logOut();
+	storePlayer();
 	player = null;
 	ctx.recordTime();
+    }
+
+    private void storePlayer() throws InterruptedException, ExecutionException {
+	Future<Boolean> setRes = gamesimStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
+	setRes.get();
     }
 
     /**
@@ -234,6 +237,7 @@ public class GameSimDriver {
 	    player.wound();
 	}
 
+	storePlayer();
 	ctx.recordTime();
     }
 
