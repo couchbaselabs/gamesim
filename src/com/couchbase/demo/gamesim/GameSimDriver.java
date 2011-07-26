@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import com.sun.faban.driver.*;
 import com.sun.faban.driver.util.Random;
 import com.sun.faban.harness.EndRun;
+import com.sun.faban.harness.PreRun;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -60,14 +61,19 @@ public class GameSimDriver {
     private String bucketpass;
     byte[] buffer = new byte[8192];
     private static MemcachedClient gamesimStore;
+    private final int ACTORMULT = 100;
+    private static final String[] players = {"Matt", "Steve", "Dustin",
+	"James", "Trond", "Melinda",
+	"Bob", "Perry",
+	"Leila", "Tony", "Damien", "Jan", "JChris",
+	"Volker", "Dale", "Aaron", "Aliaksey", "Frank",
+	"Mike", "Claire", "Benjamin", "Tony", "Keith",
+	"Bin", "Chiyoung", "Jens", "Srini"
+    };
 
-    private static final String[] players = {"Matt Ingenthron", "Steve Yen", "Dustin Sallings",
-					     "James Phillips", "Trond Norbye", "Melinda Wilken",
-					     "Bob Wiederhold", "Perry Krug", "Steven Mih",
-					     "Leila Iravini", "Tony Nguyen", "Damien Katz", "Jan Lehnardt", "JChris Anderson",
-					     "Volker Mische", "Dale Harvey", "Aaron Miller", "Aliaksey Kandratsenka", "Frank Weigel"
-                                            };
-
+    // See http://en.wikipedia.org/wiki/Category:Celtic_legendary_creatures
+    private static final String[] monsters = {"Bauchan", "Fachen", "Fuath", "Joint-eater", "Kelpie",
+	"Knocker", "Merrow", "Morgen", "Pictish-beast", "Wild-man"};
 
     /**
      * Constructs an instance of a user session on the game simulator.
@@ -117,6 +123,44 @@ public class GameSimDriver {
 	}
     }
 
+    @OnceBefore
+    public void setup() {
+	Integer playerseq = (Integer) gamesimStore.get("playerseq");
+	if (playerseq == null || playerseq < ACTORMULT) {
+	    logger.info("System has no player sequence, populating with players");
+	    populatePlayers(ACTORMULT);
+	} else {
+	    logger.info("Populated with players, no population done.");
+	}
+
+	Integer monsterseq = (Integer) gamesimStore.get("monsterseq");
+	if (monsterseq == null || monsterseq < ACTORMULT) {
+	    logger.info("System has no monster sequence, populating with monsters");
+	    populateMonsters(ACTORMULT);
+	} else {
+	    logger.info("Populated with monsters, no population done.");
+	}
+
+    }
+
+    private void populatePlayers(int number) {
+	for (int i = 0; i < number; i++) {
+	    for (String aplayer : players) {
+		Player newPlayer = new Player(aplayer + i);
+		gamesimStore.set(newPlayer.getName(), 0, gson.toJson(newPlayer));
+	    }
+	}
+    }
+
+    private void populateMonsters(int number) {
+	for (int i = 0; i < number; i++) {
+	    for (String amonster : monsters) {
+		Monster newMonster = new Monster(amonster + i);
+		gamesimStore.set(newMonster.getName(), 0, gson.toJson(newMonster));
+	    }
+	}
+    }
+
     /**
      * Operation to simulate a login.
      * @throws IOException Error connecting to server
@@ -124,14 +168,14 @@ public class GameSimDriver {
     @BenchmarkOperation(name = "Login",
     max90th = 2,
     timing = Timing.MANUAL)
-    public void doLogin() throws IOException {
+    public void doLogin() throws IOException, InterruptedException, ExecutionException {
 
 	if (player != null) {
 	    return;
 	}
 
 	ctx.recordTime();
-	playerName = getRandomPlayer();
+	playerName = getRandomPlayer() + random.random(0, ACTORMULT);
 	String playerJsonRepresentation = (String) gamesimStore.get(stripBlanks(playerName));
 	logger.log(Level.FINE, "Player JSON:\n {0}", playerJsonRepresentation);
 	if (playerJsonRepresentation == null) {
@@ -140,6 +184,10 @@ public class GameSimDriver {
 	} else {
 	    player = gson.fromJson(playerJsonRepresentation, Player.class);
 	}
+
+	player.logIn();
+	Future<Boolean> setRes = gamesimStore.set(stripBlanks(player.getName()), 0, gson.toJson(player));
+	setRes.get();
 	ctx.recordTime();
     }
 
@@ -180,9 +228,6 @@ public class GameSimDriver {
 	    winner = player.getName();
 	}
 
-	Fight newFight = new Fight(player.getName(), defender, winner, random.random(50, 1000));
-	Future<Boolean> setRes = gamesimStore.set(stripBlanks(newFight.getVersus()), port, gson.toJson(newFight));
-	setRes.get();
 	ctx.recordTime();
     }
 
@@ -193,10 +238,11 @@ public class GameSimDriver {
     @BenchmarkOperation(name = "Eat",
     max90th = 2,
     timing = Timing.MANUAL)
-    public void doEat() throws IOException {
+    public void doEat() throws IOException, InterruptedException, ExecutionException {
 	doLogin();
+	int foodEnergy = random.random(10, 100);
 	ctx.recordTime();
-	player.feed(100);
+	player.feed(foodEnergy);
 	ctx.recordTime();
     }
 
@@ -211,8 +257,7 @@ public class GameSimDriver {
     }
 
     public String getRandomPlayer() {
-	int i = random.random(0, players.length-1);
+	int i = random.random(0, players.length - 1);
 	return players[i];
     }
-
 }

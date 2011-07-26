@@ -15,7 +15,7 @@ public class Player {
     private int level;
     private boolean loggedIn;
 
-    public Player(final String playerName) {
+    public Player(String playerName) {
 	this.name = playerName;
 	uuid = UUID.randomUUID();
     }
@@ -35,8 +35,8 @@ public class Player {
 	setHitpoints(getHitpoints() - level);
     }
 
-    public void feed(int level) {
-	setHitpoints(getHitpoints() + level);
+    public void feed(int foodEnergy) {
+	setHitpoints(getHitpoints() + foodEnergy);
     }
 
     String getName() {
@@ -45,6 +45,14 @@ public class Player {
 
     private void setHitpoints(int i) {
 	hitpoints = i;
+    }
+
+    public void logIn() {
+	loggedIn = true;
+    }
+
+    public void logOut() {
+	loggedIn = false;
     }
 
 
