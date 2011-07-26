@@ -175,7 +175,7 @@ public class GameSimDriver {
 	}
 
 	ctx.recordTime();
-	playerName = getRandomPlayer() + random.random(0, ACTORMULT);
+	playerName = getRandomPlayerName() + random.random(0, ACTORMULT);
 	String playerJsonRepresentation = (String) gamesimStore.get(stripBlanks(playerName));
 	logger.log(Level.FINE, "Player JSON:\n {0}", playerJsonRepresentation);
 	if (playerJsonRepresentation == null) {
@@ -220,7 +220,7 @@ public class GameSimDriver {
 	doLogin();
 	ctx.recordTime();
 	player.wound(1);
-	String defender = getRandomPlayer();
+	String defender = getRandomPlayerName();
 	String winner;
 	if (random.random(0, 1) == 1) {
 	    winner = defender;
@@ -256,8 +256,14 @@ public class GameSimDriver {
 	return s.replaceAll("\\s", "");
     }
 
-    public String getRandomPlayer() {
+    private String getRandomPlayerName() {
 	int i = random.random(0, players.length - 1);
 	return players[i];
     }
+
+    private String getRandomMonsterName() {
+	int i = random.random(0, monsters.length -1);
+	return monsters[i];
+    }
+
 }
