@@ -21,6 +21,7 @@ public class Item {
     public Item(UUID itemOwner) {
 	ownerUuid = itemOwner;
 	uuid = UUID.randomUUID();
+	name = weapons[GameSimDriver.getRandom().random(0, weapons.length-1)] + itemOwner;
     }
 
     protected Item() {
@@ -35,6 +36,6 @@ public class Item {
     }
 
     public String getItemName() {
-	return "item" + uuid;
+	return name;
     }
 }

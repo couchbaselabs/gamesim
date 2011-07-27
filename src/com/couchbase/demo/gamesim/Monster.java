@@ -7,15 +7,12 @@ package com.couchbase.demo.gamesim;
 
 import java.util.UUID;
 
-import com.sun.faban.driver.util.Random;
-
 /**
  *
  * @author ingenthr
  */
 public class Monster {
 
-    private Random random = new Random();
     private String jsonType = "monster";
     private String name;
     private UUID uuid;
@@ -26,9 +23,9 @@ public class Monster {
     public Monster(String monstername) {
 	name = monstername;
 	uuid = UUID.randomUUID();
-	experienceWhenKilled = random.random(10, 100);
-	hitpoints = random.random(10, 100);
-	itemProbability = random.drandom(0.1d, 0.6d);
+	experienceWhenKilled = GameSimDriver.getRandom().random(10, 100);
+	hitpoints = GameSimDriver.getRandom().random(10, 5000);
+	itemProbability = GameSimDriver.getRandom().drandom(0.1d, 0.6d);
     }
 
     protected Monster() {

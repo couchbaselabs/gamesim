@@ -2,7 +2,6 @@ package com.couchbase.demo.gamesim;
 
 import java.util.UUID;
 
-import com.sun.faban.driver.util.Random;
 import java.util.ArrayList;
 
 /**
@@ -17,15 +16,14 @@ public class Player {
     private int experience;
     private int level;
     private boolean loggedIn;
-    private final Random random = new Random();
     private ArrayList<String> playerItems;
 
     public Player(String playerName) {
 	name = playerName;
 	uuid = UUID.randomUUID();
-	hitpoints = random.random(70, 150);
-	level = random.random(1, 5);
-	experience = random.random(100*2^level, (100*2^(level+1)-1));
+	hitpoints = GameSimDriver.getRandom().random(70, 150);
+	level = GameSimDriver.getRandom().random(1, 5);
+	experience = GameSimDriver.getRandom().random(100*2^level, (100*2^(level+1)-1));
     }
 
     protected Player() {

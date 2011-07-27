@@ -59,18 +59,16 @@ public class GameSimDriver {
     Player player;
     private final String bucketname;
     private String bucketpass;
-    byte[] buffer = new byte[8192];
     private static MemcachedClient gamesimStore;
-    private final int ACTORMULT = 100;
+    private final int ACTORMULT = 500000 / players.length;
     private static final String[] players = {"Matt", "Steve", "Dustin",
 	"James", "Trond", "Melinda",
-	"Bob", "Perry",
+	"Bob", "Perry", "Sharon",
 	"Leila", "Tony", "Damien", "Jan", "JChris",
 	"Volker", "Dale", "Aaron", "Aliaksey", "Frank",
 	"Mike", "Claire", "Benjamin", "Tony", "Keith",
 	"Bin", "Chiyoung", "Jens", "Srini"
     };
-
     // See http://en.wikipedia.org/wiki/Category:Celtic_legendary_creatures
     private static final String[] monsters = {"Bauchan", "Fachen", "Fuath", "Joint-eater", "Kelpie",
 	"Knocker", "Merrow", "Morgen", "Pictish-beast", "Wild-man"};
@@ -124,22 +122,11 @@ public class GameSimDriver {
     }
 
     @OnceBefore
-    public void setup() {
-	Integer playerseq = (Integer) gamesimStore.get("playerseq");
-	if (playerseq == null || playerseq < ACTORMULT) {
-	    logger.info("System has no player sequence, populating with players");
-	    populatePlayers(ACTORMULT);
-	} else {
-	    logger.info("Populated with players, no population done.");
-	}
+    public void setup() throws InterruptedException {
 
-	Integer monsterseq = (Integer) gamesimStore.get("monsterseq");
-	if (monsterseq == null || monsterseq < ACTORMULT) {
-	    logger.info("System has no monster sequence, populating with monsters");
-	    populateMonsters(ACTORMULT);
-	} else {
-	    logger.info("Populated with monsters, no population done.");
-	}
+	populatePlayers(ACTORMULT);
+	populateMonsters(ACTORMULT);
+
 
     }
 
@@ -223,9 +210,22 @@ public class GameSimDriver {
 	doLogin();
 	String attackerName = getRandomMonster();
 	ctx.recordTime();
-	Monster attacker = gson.fromJson((String)gamesimStore.get(attackerName), Monster.class);
+	Monster attacker = gson.fromJson((String) gamesimStore.get(attackerName), Monster.class);
+	assert (attacker != null);
 
-	Double playerWinProbable = new Double(player.getHitpoints()) / new Double(player.getHitpoints()) + new Double(attacker.getHitpoints());
+
+	Double ahpd = null;
+	Double phpd = null;
+	try {
+	    phpd = new Double(player.getHitpoints());
+	    ahpd = new Double(attacker.getHitpoints());
+	} catch (NullPointerException e) {
+	}
+
+	assert (ahpd != null);
+	assert (phpd != null);
+
+	Double playerWinProbable = phpd / (phpd + ahpd);
 	if (playerWinProbable > 0.5d) {
 	    Double itemProb = random.drandom(0.0d, 1.0d);
 	    if (itemProb <= attacker.getItemProbability()) {
@@ -274,16 +274,16 @@ public class GameSimDriver {
     }
 
     private String getRandomMonsterName() {
-	int i = random.random(0, monsters.length -1);
+	int i = random.random(0, monsters.length - 1);
 	return monsters[i];
     }
 
     private String getRandomMonster() {
-	return getRandomMonsterName() + random.random(0, ACTORMULT);
+	return getRandomMonsterName() + random.random(0, ACTORMULT - 1);
     }
 
     private String getRandomPlayer() {
-	return getRandomPlayerName() + random.random(0, ACTORMULT);
+	return getRandomPlayerName() + random.random(0, ACTORMULT - 1);
     }
 
     /**
@@ -292,5 +292,4 @@ public class GameSimDriver {
     public static Random getRandom() {
 	return random;
     }
-
 }
