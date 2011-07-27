@@ -1,4 +1,4 @@
-<project name="Faban FTP Benchmark" default="deploy.jar" basedir=".">
+<project name="Faban FTP Benchmark" default="deploy" basedir=".">
 
     <property file="build.properties"/>
     <property name="src.dir" value="src"/>
