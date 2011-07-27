@@ -30,12 +30,12 @@ threadPerScale = (float) 1)
 @MatrixMix(operations = {"Login", "Logout", "Eat", "AttackRandom"},
 mix = {
     @Row({0, 0, 66, 34}),
-    @Row({100, 0, 0, 0}),
-    @Row({0, 10, 56, 34}),
-    @Row({0, 10, 56, 34})
+    @Row({80, 20, 0, 0}),
+    @Row({0, 20, 34, 56}),
+    @Row({0, 20, 56, 34})
 })
 @NegativeExponential(cycleType = CycleType.CYCLETIME,
-cycleMean = 1000,
+cycleMean = 200,
 cycleDeviation = 5)
 public class GameSimDriver {
 
