@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.couchbase.demo.gamesim;
 
 import java.util.UUID;
@@ -12,12 +8,33 @@ import java.util.UUID;
  */
 public class Item {
 
+    private static String[] weapons = {"axe", "buckeyballs", "demolisher", "forsakencatapult",
+	"goblinshredder", "meatwagon", "bladethrower", "plaguespreader", "trebuchet", "glaivethrower",
+	"infinityblade", "moodofshadowsong", "corruptedashbringer", "bristleblitzstriker", "bloodyorchid",
+	"broadsword", "dagger", "mace", "katana"};
+
     private String jsonType = "item";
     private String name;
     private UUID uuid;
     private UUID ownerUuid;
 
-    public Item() {
+    public Item(UUID itemOwner) {
+	ownerUuid = itemOwner;
 	uuid = UUID.randomUUID();
+    }
+
+    protected Item() {
+	// for GSON
+    }
+
+    /**
+     * @return the uuid
+     */
+    public UUID getUuid() {
+	return uuid;
+    }
+
+    public String getItemName() {
+	return "item" + uuid;
     }
 }

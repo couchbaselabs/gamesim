@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import net.spy.memcached.internal.OperationFuture;
 import sun.net.ftp.FtpClient;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 import net.spy.memcached.MemcachedClient;
 
 @BenchmarkDefinition(name = "Game Simulator",
-version = "0.1",
+version = "0.2",
 configPrecedence = true)
 @BenchmarkDriver(name = "GameSimDriver",
 threadPerScale = (float) 1)
@@ -41,7 +42,7 @@ public class GameSimDriver {
     /** The driver context for this instance. */
     private DriverContext ctx;
     Logger logger;
-    Random random;
+    private static Random random;
     FtpClient ftpClient;
     int fileCount;
     String host;
@@ -225,14 +226,15 @@ public class GameSimDriver {
 	Monster attacker = gson.fromJson((String)gamesimStore.get(attackerName), Monster.class);
 
 	Double playerWinProbable = new Double(player.getHitpoints()) / new Double(player.getHitpoints()) + new Double(attacker.getHitpoints());
-	// playerHitpoints/(playerHitpoints + monsterHitpoints))
 	if (playerWinProbable > 0.5d) {
-	    player.feed(attacker.getExperienceWhenKilled());
 	    Double itemProb = random.drandom(0.0d, 1.0d);
 	    if (itemProb <= attacker.getItemProbability()) {
-		// create a new item
+		Item bounty = new Item(player.getUuid());
+		gamesimStore.set(bounty.getItemName(), 0, gson.toJson(bounty)).get();
+		logger.log(Level.FINER, "Player {0} won a {1}", new Object[]{player.getName(), bounty.getItemName()});
 	    }
-	    // TODO: Level up!
+	    // 100*2^level
+	    player.gainExperience(attacker.getExperienceWhenKilled());
 	} else {
 	    player.wound();
 	}
@@ -277,11 +279,18 @@ public class GameSimDriver {
     }
 
     private String getRandomMonster() {
-	return getRandomPlayerName() + random.random(0, ACTORMULT);
+	return getRandomMonsterName() + random.random(0, ACTORMULT);
     }
 
     private String getRandomPlayer() {
 	return getRandomPlayerName() + random.random(0, ACTORMULT);
+    }
+
+    /**
+     * @return the random
+     */
+    public static Random getRandom() {
+	return random;
     }
 
 }

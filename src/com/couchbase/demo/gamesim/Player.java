@@ -3,6 +3,7 @@ package com.couchbase.demo.gamesim;
 import java.util.UUID;
 
 import com.sun.faban.driver.util.Random;
+import java.util.ArrayList;
 
 /**
  * This class represents a player in the game simulator.
@@ -17,12 +18,14 @@ public class Player {
     private int level;
     private boolean loggedIn;
     private final Random random = new Random();
+    private ArrayList<String> playerItems;
 
     public Player(String playerName) {
 	name = playerName;
 	uuid = UUID.randomUUID();
 	hitpoints = random.random(70, 150);
 	level = random.random(1, 5);
+	experience = random.random(100*2^level, (100*2^(level+1)-1));
     }
 
     protected Player() {
@@ -62,6 +65,17 @@ public class Player {
 
     void wound() {
 	hitpoints = 10;
+    }
+
+    UUID getUuid() {
+	return uuid;
+    }
+
+    void gainExperience(int experienceGained) {
+	experience = experience + experienceGained;
+	if (experience > (100*2^level)) {
+	    level++;
+	}
     }
 
 }
