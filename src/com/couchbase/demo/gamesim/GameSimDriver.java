@@ -12,7 +12,6 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
-import net.spy.memcached.internal.OperationFuture;
 import sun.net.ftp.FtpClient;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -20,17 +19,17 @@ import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.CouchbaseClient;
 
 @BenchmarkDefinition(name = "Game Simulator",
-version = "0.2",
+version = "0.4",
 configPrecedence = true)
 @BenchmarkDriver(name = "GameSimDriver",
 threadPerScale = (float) 1)
 @MatrixMix(operations = {"Login", "Logout", "Eat", "AttackRandom"},
 mix = {
     @Row({0, 0, 66, 34}),
-    @Row({80, 20, 0, 0}),
+    @Row({30, 70, 0, 0}),
     @Row({0, 20, 34, 56}),
     @Row({0, 20, 56, 34})
 })
@@ -59,8 +58,8 @@ public class GameSimDriver {
     Player player;
     private final String bucketname;
     private String bucketpass;
-    private static MemcachedClient gamesimStore;
-    private final int ACTORMULT = 500000 / players.length;
+    private static CouchbaseClient gamesimStore;
+    private final int ACTORMULT = 300000 / players.length;
     private static final String[] players = {"Matt", "Steve", "Dustin",
 	"James", "Trond", "Melinda",
 	"Bob", "Perry", "Sharon",
@@ -117,7 +116,7 @@ public class GameSimDriver {
 	    // can't do this, bug SPY-2
 	    //ConnectionFactoryBuilder cfb = new ConnectionFactoryBuilder();
 	    //cfb.setOpTimeout(20000).setProtocol(ConnectionFactoryBuilder.Protocol.BINARY);
-	    gamesimStore = new MemcachedClient(servers, bucketname, bucketpass);
+	    gamesimStore = new CouchbaseClient(servers, bucketname, bucketpass);
 	}
     }
 
@@ -134,7 +133,7 @@ public class GameSimDriver {
 	for (int i = 0; i < number; i++) {
 	    for (String aplayer : players) {
 		Player newPlayer = new Player(aplayer + i);
-		gamesimStore.set(newPlayer.getName(), 0, gson.toJson(newPlayer));
+		gamesimStore.add(newPlayer.getName(), 0, gson.toJson(newPlayer));
 	    }
 	}
     }
@@ -143,7 +142,7 @@ public class GameSimDriver {
 	for (int i = 0; i < number; i++) {
 	    for (String amonster : monsters) {
 		Monster newMonster = new Monster(amonster + i);
-		gamesimStore.set(newMonster.getName(), 0, gson.toJson(newMonster));
+		gamesimStore.add(newMonster.getName(), 0, gson.toJson(newMonster));
 	    }
 	}
     }
@@ -170,9 +169,11 @@ public class GameSimDriver {
 	} else {
 	    player = gson.fromJson(playerJsonRepresentation, Player.class);
 	}
-
-	player.logIn();
-	storePlayer();
+        //Only write to the store if the status changed
+        if (!player.isLoggedIn()){
+            player.logIn();
+            storePlayer();
+        }
 	ctx.recordTime();
     }
 
@@ -188,8 +189,17 @@ public class GameSimDriver {
 	    return; // can't log out when logged out
 	}
 	ctx.recordTime();
-	player.logOut();
-	storePlayer();
+        //Only write to the store if the status changed
+        if (player.isLoggedIn()){
+            player.logOut();
+            storePlayer();
+        }
+
+        // Add some read work
+        for (int i=0; i<400; i++) {
+            playerName = getRandomPlayer();
+            gamesimStore.asyncGet(stripBlanks(playerName));
+        }
 	player = null;
 	ctx.recordTime();
     }
@@ -217,7 +227,7 @@ public class GameSimDriver {
 	Double ahpd = null;
 	Double phpd = null;
 	try {
-	    phpd = new Double(player.getHitpoints());
+	    phpd = new Double(player.getHitpoints())* new Double(2^player.getLevel());
 	    ahpd = new Double(attacker.getHitpoints());
 	} catch (NullPointerException e) {
 	}
@@ -229,7 +239,7 @@ public class GameSimDriver {
 	if (playerWinProbable > 0.5d) {
 	    Double itemProb = random.drandom(0.0d, 1.0d);
 	    if (itemProb <= attacker.getItemProbability()) {
-		Item bounty = new Item(player.getUuid());
+		Item bounty = new Item(player.getName());
 		gamesimStore.set(bounty.getItemName(), 0, gson.toJson(bounty)).get();
 		logger.log(Level.FINER, "Player {0} won a {1}", new Object[]{player.getName(), bounty.getItemName()});
 	    }

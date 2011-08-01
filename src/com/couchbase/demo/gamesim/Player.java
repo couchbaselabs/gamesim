@@ -23,11 +23,15 @@ public class Player {
 	uuid = UUID.randomUUID();
 	hitpoints = GameSimDriver.getRandom().random(70, 150);
 	level = GameSimDriver.getRandom().random(1, 5);
-	experience = GameSimDriver.getRandom().random(100*2^level, (100*2^(level+1)-1));
+	experience = GameSimDriver.getRandom().random((100*(2^level)), (100*(2^(level+1))-1));
     }
 
     protected Player() {
 	// for GSON
+    }
+
+    public boolean isLoggedIn() {
+        return loggedIn;
     }
 
     public Integer getHitpoints() {
@@ -37,8 +41,12 @@ public class Player {
 	return hitpoints;
     }
 
-    public void wound(int level) {
-	setHitpoints(getHitpoints() - level);
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void wound(int hps) {
+	setHitpoints(getHitpoints() - hps);
     }
 
     public void feed(int foodEnergy) {
@@ -71,7 +79,7 @@ public class Player {
 
     void gainExperience(int experienceGained) {
 	experience = experience + experienceGained;
-	if (experience > (100*2^level)) {
+	if (experience > (100*(2^level))) {
 	    level++;
 	}
     }

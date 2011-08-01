@@ -8,20 +8,20 @@ import java.util.UUID;
  */
 public class Item {
 
-    private static String[] weapons = {"axe", "buckeyballs", "demolisher", "forsakencatapult",
-	"goblinshredder", "meatwagon", "bladethrower", "plaguespreader", "trebuchet", "glaivethrower",
-	"infinityblade", "moodofshadowsong", "corruptedashbringer", "bristleblitzstriker", "bloodyorchid",
-	"broadsword", "dagger", "mace", "katana"};
+    private static String[] weapons = {"Axe", "Buckeyballs", "Demolisher", "Forsaken_Catapult",
+	"Goblinshredder", "Meatwagon", "Bladethrower", "Plague_spreader", "Trebuchet", "Glaive_thrower",
+	"Infinityblade", "Mood_of_Shadowsong", "Corrupted_Ash_bringer", "Bristleblitzstriker", "Bloodyorchid",
+	"Broadsword", "Dagger", "Mace", "Katana"};
 
     private String jsonType = "item";
     private String name;
     private UUID uuid;
-    private UUID ownerUuid;
+    private String ownerId;
 
-    public Item(UUID itemOwner) {
-	ownerUuid = itemOwner;
+    public Item(String itemOwner) {
+	ownerId = itemOwner;
 	uuid = UUID.randomUUID();
-	name = weapons[GameSimDriver.getRandom().random(0, weapons.length-1)] + itemOwner;
+	name = weapons[GameSimDriver.getRandom().random(0, weapons.length-1)] + "_" + uuid;
     }
 
     protected Item() {
