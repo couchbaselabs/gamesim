@@ -122,14 +122,16 @@ public class GameSimDriver {
 
     @OnceBefore
     public void setup() throws InterruptedException {
-
+	logger.info("The creator is starting the spike of population.");
 	populatePlayers(ACTORMULT);
 	populateMonsters(ACTORMULT);
+	logger.info("The creator will now rest; the world has been populated.");
 
 
     }
 
     private void populatePlayers(int number) {
+	logger.log(Level.INFO, "Creating {0} players to rid the world of monsters.", number);
 	for (int i = 0; i < number; i++) {
 	    for (String aplayer : players) {
 		Player newPlayer = new Player(aplayer + i);
@@ -139,6 +141,7 @@ public class GameSimDriver {
     }
 
     private void populateMonsters(int number) {
+	logger.log(Level.INFO, "Creating {0} monsters to vanquish players.", number);
 	for (int i = 0; i < number; i++) {
 	    for (String amonster : monsters) {
 		Monster newMonster = new Monster(amonster + i);
@@ -221,7 +224,7 @@ public class GameSimDriver {
 	String attackerName = getRandomMonster();
 	ctx.recordTime();
 	Monster attacker = gson.fromJson((String) gamesimStore.get(attackerName), Monster.class);
-	assert (attacker != null);
+	assert attacker != null : "There is no monster " + attackerName;
 
 
 	Double ahpd = null;

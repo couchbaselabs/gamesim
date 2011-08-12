@@ -1,4 +1,4 @@
-<project name="Faban FTP Benchmark" default="deploy" basedir=".">
+<project name="Game Simulator" default="deploy" basedir=".">
 
     <property file="build.properties"/>
     <property name="src.dir" value="src"/>
@@ -77,6 +77,7 @@
               fork="true"
               failonerror="true"
               dir="config">
+              <jvmarg value="-ea"/>
               <jvmarg value="-XX:+DisableExplicitGC"/>
               <jvmarg value="-Djava.security.policy=security/driver.policy"/>
               <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
