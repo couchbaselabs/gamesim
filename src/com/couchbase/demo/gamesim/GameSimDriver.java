@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import net.spy.memcached.CouchbaseClient;
 
 @BenchmarkDefinition(name = "Game Simulator",
-version = "0.4",
+version = "0.4.1",
 configPrecedence = true)
 @BenchmarkDriver(name = "GameSimDriver",
 threadPerScale = (float) 1)
