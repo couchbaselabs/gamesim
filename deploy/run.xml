@@ -13,7 +13,7 @@
         <fh:description>Game Simulator Benchmark Run</fh:description>
         <!-- The hostConfig section is used by the harness to control hosts -->
         <fa:hostConfig>
-            <fa:host>ec2-50-19-74-112.compute-1.amazonaws.com</fa:host>
+            <fa:host>127.0.0.1</fa:host>
             <fh:enabled>true</fh:enabled>
             <fh:cpus>0</fh:cpus>
         <fh:tools>vmstat 10; mpstat 10; iostat -kdx 10</fh:tools>
@@ -109,7 +109,7 @@
     the driver. Such parameters are generally used by the
     Faban Harness.-->
     <serverConfig>
-        <host>http://ec2-72-44-43-214.compute-1.amazonaws.com:8091/pools</host>
+        <host>http://127.0.0.1:8091/pools</host>
         <bucket>default</bucket>
         <bucketpw></bucketpw>
     </serverConfig>

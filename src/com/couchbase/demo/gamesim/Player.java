@@ -9,6 +9,7 @@ import java.util.ArrayList;
  * @author ingenthr
  */
 public class Player {
+
     private String jsonType = "player";
     private UUID uuid;
     private String name;
@@ -19,15 +20,15 @@ public class Player {
     private ArrayList<String> playerItems;
 
     public Player(String playerName) {
-	name = playerName;
-	uuid = UUID.randomUUID();
-	hitpoints = GameSimDriver.getRandom().random(70, 150);
-	level = GameSimDriver.getRandom().random(1, 5);
-	experience = GameSimDriver.getRandom().random((100*(2^level)), (100*(2^(level+1))-1));
+        name = playerName;
+        uuid = UUID.randomUUID();
+        hitpoints = GameSimDriver.getRandom().random(70, 150);
+        level = GameSimDriver.getRandom().random(1, 5);
+        experience = GameSimDriver.getRandom().random((100 * (2 ^ level)), (100 * (2 ^ (level + 1)) - 1));
     }
 
     protected Player() {
-	// for GSON
+        // for GSON
     }
 
     public boolean isLoggedIn() {
@@ -35,10 +36,10 @@ public class Player {
     }
 
     public Integer getHitpoints() {
-	if (hitpoints == null) {
-	    hitpoints = 100;
-	}
-	return hitpoints;
+        if (hitpoints == null) {
+            hitpoints = 100;
+        }
+        return hitpoints;
     }
 
     public Integer getLevel() {
@@ -46,42 +47,41 @@ public class Player {
     }
 
     public void wound(int hps) {
-	setHitpoints(getHitpoints() - hps);
+        setHitpoints(getHitpoints() - hps);
     }
 
     public void feed(int foodEnergy) {
-	setHitpoints(getHitpoints() + foodEnergy);
+        setHitpoints(getHitpoints() + foodEnergy);
     }
 
     String getName() {
-	return this.name;
+        return this.name;
     }
 
     private void setHitpoints(int i) {
-	hitpoints = i;
+        hitpoints = i;
     }
 
     public void logIn() {
-	loggedIn = true;
+        loggedIn = true;
     }
 
     public void logOut() {
-	loggedIn = false;
+        loggedIn = false;
     }
 
     void wound() {
-	hitpoints = 10;
+        hitpoints = 10;
     }
 
     UUID getUuid() {
-	return uuid;
+        return uuid;
     }
 
     void gainExperience(int experienceGained) {
-	experience = experience + experienceGained;
-	if (experience > (100*(2^level))) {
-	    level++;
-	}
+        experience = experience + experienceGained;
+        if (experience > (100 * (2 ^ level))) {
+            level++;
+        }
     }
-
 }
